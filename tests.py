@@ -1,3 +1,4 @@
+import pytest
 from main import BooksCollector
 
 # класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
@@ -22,3 +23,73 @@ class TestBooksCollector:
 
     # напиши свои тесты ниже
     # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+
+class TestBooksCollector:
+
+    def test_add_new_book_book_added(self):
+        collector = BooksCollector()
+        collector.add_new_book('Гордость и предубеждение и зомби')
+        assert 'Гордость и предубеждение и зомби' in collector.get_books_genre()
+
+    @pytest.mark.parametrize('name', ['', 'a' * 41])
+    def test_add_new_book_invalid_name_not_added(self, name):
+        collector = BooksCollector()
+        collector.add_new_book(name)
+        assert name not in collector.get_books_genre()
+
+    def test_add_new_book_duplicate_not_added(self):
+        collector = BooksCollector()
+        collector.add_new_book('1984')
+        collector.add_new_book('1984')
+        assert len(collector.get_books_genre()) == 1
+
+    def test_set_book_genre_valid_genre_set(self):
+        collector = BooksCollector()
+        collector.add_new_book('Мгла')
+        collector.set_book_genre('Мгла', 'Ужасы')
+        assert collector.get_book_genre('Мгла') == 'Ужасы'
+
+    def test_set_book_genre_invalid_genre_not_set(self):
+        collector = BooksCollector()
+        collector.add_new_book('Зеленая миля')
+        collector.set_book_genre('Зеленая миля', 'Фэнтези')
+        assert collector.get_book_genre('Зеленая миля') == ''
+
+    def test_get_books_with_specific_genre_correct_list_returned(self):
+        collector = BooksCollector()
+        collector.add_new_book('Мгла')
+        collector.add_new_book('Оно')
+        collector.set_book_genre('Мгла', 'Ужасы')
+        collector.set_book_genre('Оно', 'Ужасы')
+        books = collector.get_books_with_specific_genre('Ужасы')
+        assert len(books) == 2
+        assert 'Мгла' in books
+        assert 'Оно' in books
+
+    def test_get_books_for_children_no_adult_books_returned(self):
+        collector = BooksCollector()
+        collector.add_new_book('Корпорация монстров')
+        collector.add_new_book('Оно')
+        collector.set_book_genre('Корпорация монстров', 'Мультфильмы')
+        collector.set_book_genre('Оно', 'Ужасы')
+        children_books = collector.get_books_for_children()
+        assert 'Корпорация монстров' in children_books
+        assert 'Оно' not in children_books
+
+    def test_add_book_in_favorites_added_to_favorites(self):
+        collector = BooksCollector()
+        collector.add_new_book('Шерлок Холмс')
+        collector.add_book_in_favorites('Шерлок Холмс')
+        assert 'Шерлок Холмс' in collector.get_list_of_favorites_books()
+
+    def test_add_book_in_favorites_not_in_books_not_added(self):
+        collector = BooksCollector()
+        collector.add_book_in_favorites('Властелин колец')
+        assert 'Властелин колец' not in collector.get_list_of_favorites_books()
+
+    def test_delete_book_from_favorites_removed_from_favorites(self):
+        collector = BooksCollector()
+        collector.add_new_book('Гарри Поттер')
+        collector.add_book_in_favorites('Гарри Поттер')
+        collector.delete_book_from_favorites('Гарри Поттер')
+        assert 'Гарри Поттер' not in collector.get_list_of_favorites_books()
